@@ -1,0 +1,47 @@
+type AffixMapping = { [key: number]: string }
+
+const affixMapping: AffixMapping = {
+  1: 'Overflowing',
+  2: 'Skittish',
+  3: 'Volcanic',
+  4: 'Necrotic',
+  5: 'Teeming',
+  6: 'Raging',
+  7: 'Bolstering',
+  8: 'Sanguine',
+  9: 'Tyrannical',
+  10: 'Fortified',
+  11: 'Bursting',
+  12: 'Grievous',
+  13: 'Explosive',
+  14: 'Quaking',
+  15: 'Relentless',
+  16: 'Infested',
+  117: 'Reaping',
+  119: 'Beguiling',
+  120: 'Awakened',
+  121: 'Prideful',
+  122: 'Inspiring',
+  123: 'Spiteful',
+  124: 'Storming',
+  128: 'Tormented',
+  129: 'Encrypted',
+  130: 'Shrouded',
+  131: 'Thundering',
+  132: 'Raging',
+  133: 'Explosive',
+  134: 'Volcanic',
+  135: 'Grievous',
+  136: 'Bolstering',
+  137: 'Sanguine',
+  138: 'Necrotic',
+  139: 'Quaking',
+  140: 'Storming',
+  141: 'Bursting',
+  142: 'Inspiring',
+  143: 'Spiteful',
+}
+
+export function convertAffixIdsToNames(ids: number[]): string[] {
+  return ids?.map((id) => affixMapping[id] || 'Unknown Affix')
+}

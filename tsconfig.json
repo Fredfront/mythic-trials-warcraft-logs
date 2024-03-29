@@ -15,7 +15,12 @@
     "plugins": [
       {
         "name": "next"
-      }
+      },
+      { 
+        "name": "@0no-co/graphqlsp", 
+        "schema": "https://www.warcraftlogs.com/v2-api-docs/warcraft/",
+        "tadaOutputLocation": "./graphql-env.d.ts"
+      } 
     ],
     "paths": {
       "@/*": ["./*"]
