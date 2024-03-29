@@ -8,8 +8,8 @@ export async function getToken() {
     return tokenCache.value
   }
 
-  const client_id = process.env.WARCRAFTLOGS_CLIENT_ID
-  const client_secret = process.env.WARCRAFTLOGS_CLIENT_SECRET
+  const client_id = process.env.NEXT_PUBLIC_WARCRAFTLOGS_CLIENT_ID
+  const client_secret = process.env.NEXT_PUBLIC_WARCRAFTLOGS_CLIENT_SECRET
   const url = 'https://www.warcraftlogs.com/oauth/token'
   const credentials = `${client_id}:${client_secret}`
   const encodedCredentials = Buffer.from(credentials).toString('base64')
