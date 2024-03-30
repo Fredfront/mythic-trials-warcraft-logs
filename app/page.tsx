@@ -10,6 +10,8 @@ import { Icons } from './components/Loading'
 export default function Home() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const fallbackToken = sessionStorage.getItem('WCL_token') || ''
+
   const fallbackReportCode = searchParams.get('reportCode') || ''
   const fallbackReportCodeTwo = searchParams.get('reportCodeTwo') || ''
   const fallbackTeamNameOne = searchParams.get('teamNameOne') || ''
@@ -18,7 +20,7 @@ export default function Home() {
   const fallbackSelectedReportOne = searchParams.get('selectedReportOne')
   const fallbackSelectedReportTwo = searchParams.get('selectedReportTwo')
   const [loading, setLoading] = useState<boolean>(false)
-
+  const [token, setToken] = useState<string>(fallbackToken)
   const [fightData, setFightData] = useState<any[]>([])
   const [fightDataTwo, setFightDataTwo] = useState<any[]>([])
   const [reportCode, setReportCode] = useState(fallbackReportCode)
@@ -60,34 +62,40 @@ export default function Home() {
     keystoneAffixes: undefined,
   })
 
+  useEffect(() => {
+    async function fetchToken() {
+      const token = await getToken()
+      setToken(token)
+      sessionStorage.setItem('WCL_token', token)
+    }
+    fetchToken()
+  }, [])
+
   const fetchFightDataOne = useCallback(() => {
     async function fetchData() {
       setLoadingFightDataOne(true)
 
-      const token = await getToken()
       const fightData = await fights(reportCode, token)
       setFightData(fightData)
       setLoadingFightDataOne(false)
     }
     fetchData()
-  }, [reportCode])
+  }, [reportCode, token])
 
   const fetchFightDataTwo = useCallback(() => {
     async function fetchData() {
       setLoadingFightDataTwo(true)
-      const token = await getToken()
       const fightDataTwo = await fights(reportCodeTwo, token)
       setFightDataTwo(fightDataTwo)
       setLoadingFightDataTwo(false)
     }
     fetchData()
-  }, [reportCodeTwo])
+  }, [reportCodeTwo, token])
 
   const fetchDamageDone = useCallback(
     (fightInfo: DungeonInfo) => {
       async function fetchData() {
         setLoadingDamageDone(true)
-        const token = await getToken()
         const damageDone = await damageDoneGraph(reportCode, fightInfo, token)
         setDamageDone(damageDone)
 
@@ -95,45 +103,42 @@ export default function Home() {
       }
       fetchData()
     },
-    [reportCode],
+    [reportCode, token],
   )
 
   const fetchDamageDoneTwo = useCallback(
     (fightInfo: DungeonInfo) => {
       async function fetchData() {
         setLoadingDamageDoneTwo(true)
-        const token = await getToken()
         const damageDoneTwo = await damageDoneGraph(reportCodeTwo, fightInfo, token)
         setDamageDoneTwo(damageDoneTwo)
         setLoadingDamageDoneTwo(false)
       }
       fetchData()
     },
-    [reportCodeTwo],
+    [reportCodeTwo, token],
   )
 
   const fetchHealingDone = useCallback(
     (fightInfo: DungeonInfo) => {
       async function fetchData() {
-        const token = await getToken()
         const healingDone = await healingDoneGraph(reportCode, fightInfo, token)
         setHealingDone(healingDone)
       }
       fetchData()
     },
-    [reportCode],
+    [reportCode, token],
   )
 
   const fetchHealingDoneTwo = useCallback(
     (fightInfo: DungeonInfo) => {
       async function fetchData() {
-        const token = await getToken()
         const healingDone = await healingDoneGraph(reportCodeTwo, fightInfo, token)
         setHealingDoneTwo(healingDone)
       }
       fetchData()
     },
-    [reportCodeTwo],
+    [reportCodeTwo, token],
   )
 
   const dmgDoneArrayLength = damageDone?.graph?.data?.series?.length
@@ -213,6 +218,37 @@ export default function Home() {
     }
   }, [compareData, fightData, fightDataTwo, generateInUrl, totalDamageDone, totalDamageDoneTwo])
 
+  //store totalDamgeDone in localstorage
+  useEffect(() => {
+    if (totalDamageDone) {
+      sessionStorage.setItem(
+        'totalDamageDone',
+        JSON.stringify({
+          ...totalDamageDone,
+          reportCode,
+        }),
+      )
+    }
+
+    if (totalDamageDoneTwo) {
+      sessionStorage.setItem(
+        'totalDamageDoneTwo',
+        JSON.stringify({
+          ...totalDamageDoneTwo,
+          reportCodeTwo,
+        }),
+      )
+    }
+
+    if (fightInfo.id) {
+      sessionStorage.setItem('fightInfo', JSON.stringify(fightInfo))
+    }
+
+    if (fightInfoTwo.id) {
+      sessionStorage.setItem('fightInfoTwo', JSON.stringify(fightInfoTwo))
+    }
+  }, [fightInfo, fightInfoTwo, reportCode, reportCodeTwo, totalDamageDone, totalDamageDoneTwo])
+
   useEffect(() => {
     if (findFightDataToFallback && generateInUrl === 'true' && fightInfo.id === undefined) {
       setFightInfo(findFightDataToFallback)
@@ -249,6 +285,20 @@ export default function Home() {
     params.append('generate', 'true')
 
     router.replace(`/?${params.toString()}`)
+  }
+
+  if (
+    generateInUrl === 'true' &&
+    (totalDamageDone === undefined ||
+      totalDamageDoneTwo === undefined ||
+      fightData === undefined ||
+      fightDataTwo === undefined)
+  ) {
+    return (
+      <div className="flex w-full h-screen justify-center items-center">
+        <Icons.spinner className="h-20 w-20 animate-spin" />
+      </div>
+    )
   }
 
   if (
@@ -336,32 +386,31 @@ export default function Home() {
   return (
     <main className="flex w-full mb-20 mt-20 flex-col p-4">
       <h1 className="text-center m-auto text-4xl font-bold">Generate fancy MDI graphs</h1>
-      <div className=" w-full  max-w-4xl m-auto mt-20 grid grid-cols-2">
+      <h2 className="text-center m-auto text-lg mt-4">Compare two reports</h2>
+      <div className=" w-full  max-w-4xl m-auto mt-20 grid grid-cols-1 lg:grid-cols-2">
         <div>
-          <div className="flex">
-            <div className="flex flex-col">
-              <input
-                placeholder="Report code"
-                className=" lg:min-w-72 p-1  text-black"
-                name="reportCodeOne"
-                onChange={(event) => {
-                  setReportCode(event.target.value)
-                  setFightInfo({
-                    id: undefined,
-                    startTime: undefined,
-                    endTime: undefined,
-                    name: undefined,
-                    keystoneAffixes: undefined,
-                  })
-                }}
-                value={reportCode}
-              />
-            </div>
+          <div className="flex w-full ">
+            <input
+              placeholder="Report code"
+              className=" lg:min-w-72 p-1  text-black flex-1 lg:max-w-72 rounded-l-lg "
+              name="reportCodeOne"
+              onChange={(event) => {
+                setReportCode(event.target.value)
+                setFightInfo({
+                  id: undefined,
+                  startTime: undefined,
+                  endTime: undefined,
+                  name: undefined,
+                  keystoneAffixes: undefined,
+                })
+              }}
+              value={reportCode}
+            />
 
             <button
               disabled={reportCode.length < 15 || loadingDamageDone || loadingFightDataOne}
               onClick={fetchFightDataOne}
-              className="bg-[#FDB202] min-w-20 p-1 "
+              className="bg-[#FDB202] min-w-20 p-1 rounded-r-lg "
             >
               {' '}
               <div className=" ml-4 flex mr-4">
@@ -372,10 +421,10 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <div>
+          <div className="flex w-full mt-2 lg:mt-0">
             <input
               placeholder="Report code"
-              className=" lg:min-w-72 p-1  text-black"
+              className=" lg:min-w-72 p-1  text-black flex-1 rounded-l-lg  "
               name="reportCodeTwo"
               onChange={(event) => {
                 setReportCodeTwo(event.target.value)
@@ -394,7 +443,7 @@ export default function Home() {
             <button
               disabled={reportCodeTwo.length < 15 || loadingDamageDoneTwo || loadingFightDataTwo}
               onClick={fetchFightDataTwo}
-              className="bg-[#FDB202] min-w-20 p-1 "
+              className="bg-[#FDB202] min-w-20 p-1 rounded-r-lg"
             >
               {' '}
               <div className=" ml-4 flex mr-4">
@@ -405,7 +454,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="w-full max-w-4xl m-auto grid grid-cols-2 ">
+      <div className="w-full max-w-4xl m-auto grid lg:grid-cols-2 ">
         <div>
           <ul>
             {fightData && fightData.length ? <h3 className="mt-4">Select a report to compare</h3> : null}
@@ -438,32 +487,35 @@ export default function Home() {
         </div>
         <div>
           <ul>
-            {fightDataTwo && fightDataTwo.length > 0 ? <h3 className="mt-4">Select a report to compare</h3> : null}
-            {fightDataTwo?.map((e, index) => {
-              const classNameForList = selectedReportTwo === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202]' : 'bg-slate-500'
-              return (
-                <li
-                  onClick={() => {
-                    const fightInfo = {
-                      id: e.id,
-                      startTime: e.startTime,
-                      endTime: e.endTime,
-                      name: e.name,
-                      keystoneAffixes: e.keystoneAffixes,
-                      keystoneLevel: e.keystoneLevel,
-                    }
-                    setFightInfoTwo(fightInfo)
-                    fetchDamageDoneTwo(fightInfo)
-                    fetchHealingDoneTwo(fightInfo)
-                    setSelectedReportTwo(e.id)
-                  }}
-                  className={`p-2 ${classNameForList} lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
-                  key={index}
-                >
-                  {e.id}. {e.name}
-                </li>
-              )
-            })}
+            {fightData && fightData.length ? <h3 className="mt-4">Select second report to compare</h3> : null}
+
+            {fightData &&
+              fightData.length > 0 &&
+              fightDataTwo?.map((e, index) => {
+                const classNameForList = selectedReportTwo === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202]' : 'bg-slate-500'
+                return (
+                  <li
+                    onClick={() => {
+                      const fightInfo = {
+                        id: e.id,
+                        startTime: e.startTime,
+                        endTime: e.endTime,
+                        name: e.name,
+                        keystoneAffixes: e.keystoneAffixes,
+                        keystoneLevel: e.keystoneLevel,
+                      }
+                      setFightInfoTwo(fightInfo)
+                      fetchDamageDoneTwo(fightInfo)
+                      fetchHealingDoneTwo(fightInfo)
+                      setSelectedReportTwo(e.id)
+                    }}
+                    className={`p-2 ${classNameForList} lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
+                    key={index}
+                  >
+                    {e.id}. {e.name}
+                  </li>
+                )
+              })}
           </ul>
         </div>
       </div>
@@ -475,21 +527,21 @@ export default function Home() {
               setCompareData(true)
               addQueryParams()
             }}
-            className=" bg-[#FDB202] rounded-md min-w-72 m-auto mt-10 p-[10px] text-black font-bold  "
+            className=" bg-[#FDB202] min-w-72 m-auto mt-10 p-[10px] text-black font-bold rounded-lg  "
           >
-            Generate
+            Create graphs
           </button>
           <div className="m-auto flex gap-10 mt-10 ">
             <input
               placeholder="Team name one"
-              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black"
+              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black rounded-lg"
               onChange={(event) => {
                 setTeamNameOne(event.target.value)
               }}
             />
             <input
               placeholder="Team name two"
-              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black"
+              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black rounded-lg"
               onChange={(event) => {
                 setTeamNameTwo(event.target.value)
               }}
