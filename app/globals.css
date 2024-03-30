@@ -6,3 +6,11 @@ body {
   background: #052d49;
   color: white;
 }
+
+li {
+  border-radius: 5px !important;
+}
+
+.my-chart rect {
+  fill: #ffd700; /* Example fill color */
+}

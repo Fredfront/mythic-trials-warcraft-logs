@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { AxisOptions, Chart } from 'react-charts'
 import Image from 'next/image'
 import { convertAffixIdsToNames } from '../utils/affixes'
+import { useSearchParams } from 'next/navigation'
 
 interface DamageDataPoint {
   primary: Date // For storing the converted timestamp
@@ -49,7 +50,7 @@ const LineComponent: React.FC<LineProps> = ({
   // Function to convert your dataset into the format expected by react-charts
   const convertToChartData = (dataset: DamageDataSet): ChartData => {
     const { pointInterval, data, name } = dataset
-    const dataPoints: DamageDataPoint[] = data.map((value, index) => ({
+    const dataPoints: DamageDataPoint[] = data?.map((value, index) => ({
       primary: new Date(0 + index * pointInterval),
       secondary: value,
     }))
@@ -115,6 +116,10 @@ const LineComponent: React.FC<LineProps> = ({
   }
 
   const affixesToNames = convertAffixIdsToNames(fightInfo.keystoneAffixes)
+  const searchParams = useSearchParams()
+
+  const fallbackTeamNameOne = searchParams.get('teamNameOne') || ''
+  const fallbackTeamNameTwo = searchParams.get('teamNameTwo') || ''
 
   return (
     <div className="flex flex-col">
