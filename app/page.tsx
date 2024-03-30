@@ -17,6 +17,7 @@ export default function Home() {
   const generateInUrl = searchParams.get('generate') || ''
   const fallbackSelectedReportOne = searchParams.get('selectedReportOne')
   const fallbackSelectedReportTwo = searchParams.get('selectedReportTwo')
+  const [loading, setLoading] = useState<boolean>(false)
 
   const [fightData, setFightData] = useState<any[]>([])
   const [fightDataTwo, setFightDataTwo] = useState<any[]>([])
@@ -250,7 +251,15 @@ export default function Home() {
     router.replace(`/?${params.toString()}`)
   }
 
-  if (compareData) {
+  if (
+    compareData === true &&
+    totalDamageDone &&
+    totalDamageDoneTwo &&
+    totalHealingDone &&
+    totalHealingDoneTwo &&
+    fightData &&
+    fightDataTwo
+  ) {
     return (
       <>
         <button
