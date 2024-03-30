@@ -63,6 +63,8 @@ export default function Home() {
     keystoneAffixes: undefined,
   })
 
+  console.log(token)
+
   useEffect(() => {
     async function fetchToken() {
       const token = await getToken()
@@ -187,7 +189,8 @@ export default function Home() {
       totalDamageDone === undefined &&
       totalDamageDoneTwo === undefined &&
       fallbackSelectedReportOneNumber &&
-      fallbackSelectedReportTwoNumber
+      fallbackSelectedReportTwoNumber &&
+      token
     ) {
       fetchFightDataOne()
       fetchFightDataTwo()
@@ -198,10 +201,11 @@ export default function Home() {
     fetchFightDataOne,
     fetchFightDataTwo,
     fightData,
-    fightData?.length,
+    fightData.length,
     fightDataTwo,
-    fightDataTwo?.length,
+    fightDataTwo.length,
     generateInUrl,
+    token,
     totalDamageDone,
     totalDamageDoneTwo,
   ])
@@ -260,7 +264,7 @@ export default function Home() {
   }, [fallbackTeamNameOne, fetchDamageDone, fetchHealingDone, fightInfo.id, findFightDataToFallback, generateInUrl])
 
   useEffect(() => {
-    if (findFightDataToFallbackTwo && generateInUrl === 'true' && fightInfoTwo.id === undefined) {
+    if (findFightDataToFallbackTwo && generateInUrl === 'true' && fightInfoTwo.id === undefined && token) {
       setFightInfoTwo(findFightDataToFallbackTwo)
       fetchDamageDoneTwo(findFightDataToFallbackTwo)
       fetchHealingDoneTwo(findFightDataToFallbackTwo)
@@ -273,6 +277,7 @@ export default function Home() {
     fightInfoTwo.id,
     findFightDataToFallbackTwo,
     generateInUrl,
+    token,
   ])
 
   function addQueryParams() {
