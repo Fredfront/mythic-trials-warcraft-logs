@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { damageDoneGraph, healingDoneGraph } from './api/damageDone'
 import Line, { DungeonInfo } from './components/TanstackCharts'
 import { Icons } from './components/Loading'
+import { convertAffixIdsToNames } from './utils/affixes'
 
 export default function Home() {
   const searchParams = useSearchParams()
@@ -386,7 +387,9 @@ export default function Home() {
   return (
     <main className="flex w-full mb-20 mt-20 flex-col p-4">
       <h1 className="text-center m-auto text-4xl font-bold">Generate fancy MDI graphs</h1>
-      <h2 className="text-center m-auto text-lg mt-4">Compare two reports</h2>
+      <h2 className="text-center m-auto text-lg mt-4">
+        Search for two reports. Select which report you wanna compare after searching.
+      </h2>
       <div className=" w-full  max-w-4xl m-auto mt-20 grid grid-cols-1 lg:grid-cols-2">
         <div>
           <div className="flex w-full ">
@@ -457,9 +460,15 @@ export default function Home() {
       <div className="w-full max-w-4xl m-auto grid lg:grid-cols-2 ">
         <div>
           <ul>
-            {fightData && fightData.length ? <h3 className="mt-4">Select a report to compare</h3> : null}
+            {fightData && fightData.length ? (
+              <h3 className="mt-4">Select a report to compare (Only showing M+ reports)</h3>
+            ) : null}
             {fightData?.map((e, index) => {
-              const classNameForList = selectedReportOne === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202]' : 'bg-slate-500'
+              const classNameForList =
+                selectedReportOne === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202] text-black ' : 'bg-slate-500'
+              const affixesToNames = convertAffixIdsToNames(e.keystoneAffixes)
+
+              if (e.keystoneLevel === null) return null
               return (
                 <li
                   onClick={() => {
@@ -479,7 +488,7 @@ export default function Home() {
                   className={`p-2 ${classNameForList} mb-1 mt-1 lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
                   key={index}
                 >
-                  {e.id}. {e.name}
+                  {e.id}. {e.name}, +{e.keystoneLevel} ({affixesToNames?.join(', ')})
                 </li>
               )
             })}
@@ -487,12 +496,19 @@ export default function Home() {
         </div>
         <div>
           <ul>
-            {fightData && fightData.length ? <h3 className="mt-4">Select second report to compare</h3> : null}
+            {fightData && fightData.length > 0 && fightDataTwo && fightDataTwo.length > 0 ? (
+              <h3 className="mt-4">Select second report to compare (Only showing M+ reports)</h3>
+            ) : null}
 
             {fightData &&
               fightData.length > 0 &&
+              fightDataTwo &&
+              fightDataTwo.length > 0 &&
               fightDataTwo?.map((e, index) => {
-                const classNameForList = selectedReportTwo === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202]' : 'bg-slate-500'
+                const classNameForList =
+                  selectedReportTwo === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202] text-black ' : 'bg-slate-500'
+                const affixesToNames = convertAffixIdsToNames(e.keystoneAffixes)
+
                 return (
                   <li
                     onClick={() => {
@@ -512,11 +528,34 @@ export default function Home() {
                     className={`p-2 ${classNameForList} lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
                     key={index}
                   >
-                    {e.id}. {e.name}
+                    {e.id}. {e.name} +{e.keystoneLevel} ({affixesToNames?.join(', ')})
                   </li>
                 )
               })}
           </ul>
+        </div>
+      </div>
+
+      <div className="w-full  max-w-4xl m-auto mt-4 grid grid-cols-1 lg:grid-cols-2 ">
+        <div>
+          <h3>Team name one</h3>
+          <input
+            placeholder="Team name one"
+            className=" lg:min-w-72 m-auto p-1  lg:max-w-72 mb-2 w-full  text-black rounded-lg"
+            onChange={(event) => {
+              setTeamNameOne(event.target.value)
+            }}
+          />
+        </div>
+        <div>
+          <h3>Team name two</h3>
+          <input
+            placeholder="Team name two"
+            className=" lg:min-w-72 lg:max-w-72  w-full m-auto p-1  text-black rounded-lg"
+            onChange={(event) => {
+              setTeamNameTwo(event.target.value)
+            }}
+          />
         </div>
       </div>
 
@@ -531,22 +570,6 @@ export default function Home() {
           >
             Create graphs
           </button>
-          <div className="m-auto flex gap-10 mt-10 ">
-            <input
-              placeholder="Team name one"
-              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black rounded-lg"
-              onChange={(event) => {
-                setTeamNameOne(event.target.value)
-              }}
-            />
-            <input
-              placeholder="Team name two"
-              className=" lg:min-w-72 max-w-72 m-auto p-1  text-black rounded-lg"
-              onChange={(event) => {
-                setTeamNameTwo(event.target.value)
-              }}
-            />
-          </div>
         </div>
       ) : null}
     </main>
