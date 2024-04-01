@@ -494,6 +494,7 @@ export default function Home() {
                   }}
                   className="mt-4"
                   placeholder="Enter team name"
+                  name="teamNameOne"
                 />
               </>
             ) : null}
@@ -501,6 +502,7 @@ export default function Home() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Input
+                disabled={reportCodeTwo === ''}
                 name="reportCodeTwo"
                 onChange={(event) => {
                   setErrorMessageTwo(undefined)
@@ -577,6 +579,7 @@ export default function Home() {
                   }}
                   className="mt-4"
                   placeholder="Enter team name"
+                  name="teamNameTwo"
                 />
               </>
             ) : null}
