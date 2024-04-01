@@ -502,7 +502,6 @@ export default function Home() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Input
-                disabled={reportCodeTwo === ''}
                 name="reportCodeTwo"
                 onChange={(event) => {
                   setErrorMessageTwo(undefined)
@@ -529,6 +528,7 @@ export default function Home() {
                 }}
                 className="h-auto"
                 variant="outline"
+                disabled={reportCodeTwo === ''}
               >
                 {loadingFightDataTwo ? (
                   <Icons.spinner className="h-4 w-4 animate-spin text-black" />
