@@ -1,5 +1,5 @@
 export async function fights(reportCode: string, token: string) {
-  if (reportCode.length < 15) return
+  if (reportCode.length < 10) return
 
   const response = await fetch('https://www.warcraftlogs.com/api/v2/client', {
     method: 'POST',
@@ -8,6 +8,7 @@ export async function fights(reportCode: string, token: string) {
         query {
           reportData {
             report(code: "${reportCode}") {
+              code
               fights {
                 id
                 encounterID
@@ -29,5 +30,8 @@ export async function fights(reportCode: string, token: string) {
   })
 
   const data = await response.json()
-  return data?.data?.reportData?.report?.fights
+  return {
+    data: data?.data?.reportData?.report?.fights,
+    errorMessage: data.errors?.[0].message,
+  }
 }

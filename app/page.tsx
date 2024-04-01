@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { JSX, SVGProps, useCallback, useEffect, useState } from 'react'
 import { fights } from './api/fights'
 import { getToken } from './wcl/token'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -7,6 +7,20 @@ import { damageDoneGraph, healingDoneGraph } from './api/damageDone'
 import Line, { DungeonInfo } from './components/TanstackCharts'
 import { Icons } from './components/Loading'
 import { convertAffixIdsToNames } from './utils/affixes'
+import MyBarChart from './components/TanstackPerPlayerChart'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+
+type fightData = {
+  encounterId: number
+  endTime: number
+  id: number
+  keystoneAffixes: number[]
+  keystoneLevel: number
+  name: string
+  startTime: number
+}
 
 export default function Home() {
   const searchParams = useSearchParams()
@@ -22,8 +36,8 @@ export default function Home() {
   const fallbackSelectedReportTwo = searchParams.get('selectedReportTwo')
   const [loading, setLoading] = useState<boolean>(false)
   const [token, setToken] = useState<string>(fallbackToken)
-  const [fightData, setFightData] = useState<any[]>([])
-  const [fightDataTwo, setFightDataTwo] = useState<any[]>([])
+  const [fightData, setFightData] = useState<fightData[]>([])
+  const [fightDataTwo, setFightDataTwo] = useState<fightData[]>([])
   const [reportCode, setReportCode] = useState(fallbackReportCode)
   const [reportCodeTwo, setReportCodeTwo] = useState<string>(fallbackReportCodeTwo)
   const [damageDone, setDamageDone] = useState<any>([])
@@ -63,8 +77,6 @@ export default function Home() {
     keystoneAffixes: undefined,
   })
 
-  console.log(token)
-
   useEffect(() => {
     async function fetchToken() {
       const token = await getToken()
@@ -74,12 +86,19 @@ export default function Home() {
     fetchToken()
   }, [])
 
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+  const [errorMessageTwo, setErrorMessageTwo] = useState<string | undefined>(undefined)
+
   const fetchFightDataOne = useCallback(() => {
     async function fetchData() {
       setLoadingFightDataOne(true)
 
       const fightData = await fights(reportCode, token)
-      setFightData(fightData)
+      setFightData(fightData?.data)
+      if (fightData?.errorMessage) {
+        setErrorMessage(fightData.errorMessage)
+      }
+
       setLoadingFightDataOne(false)
     }
     fetchData()
@@ -89,7 +108,12 @@ export default function Home() {
     async function fetchData() {
       setLoadingFightDataTwo(true)
       const fightDataTwo = await fights(reportCodeTwo, token)
-      setFightDataTwo(fightDataTwo)
+      setFightDataTwo(fightDataTwo?.data)
+
+      if (fightDataTwo?.errorMessage) {
+        setErrorMessageTwo(fightDataTwo.errorMessage)
+      }
+
       setLoadingFightDataTwo(false)
     }
     fetchData()
@@ -159,9 +183,6 @@ export default function Home() {
   const fallbackSelectedReportOneNumber = parseInt(fallbackSelectedReportOne || '')
   const fallbackSelectedReportTwoNumber = parseInt(fallbackSelectedReportTwo || '')
 
-  const [selectedReportOne, setSelectedReportOne] = useState<number | undefined>(fallbackSelectedReportOneNumber)
-  const [selectedReportTwo, setSelectedReportTwo] = useState<number | undefined>(fallbackSelectedReportTwoNumber)
-
   const [teamNameOne, setTeamNameOne] = useState<string>(fallbackTeamNameOne)
   const [teamNameTwo, setTeamNameTwo] = useState<string>(fallbackTeamNameTwo)
 
@@ -201,9 +222,9 @@ export default function Home() {
     fetchFightDataOne,
     fetchFightDataTwo,
     fightData,
-    fightData.length,
+    fightData?.length,
     fightDataTwo,
-    fightDataTwo.length,
+    fightDataTwo?.length,
     generateInUrl,
     token,
     totalDamageDone,
@@ -284,8 +305,8 @@ export default function Home() {
     const params = new URLSearchParams()
     params.append('reportCode', reportCode)
     params.append('reportCodeTwo', reportCodeTwo)
-    selectedReportOne && params.append('selectedReportOne', selectedReportOne.toString())
-    selectedReportTwo && params.append('selectedReportTwo', selectedReportTwo.toString())
+    fightInfo && fightInfo.id && params.append('selectedReportOne', fightInfo.id.toString())
+    fightInfoTwo && fightInfoTwo.id && params.append('selectedReportTwo', fightInfoTwo.id.toString())
     params.append('teamNameOne', teamNameOne)
     params.append('teamNameTwo', teamNameTwo)
     params.append('generate', 'true')
@@ -345,8 +366,6 @@ export default function Home() {
               keystoneAffixes: undefined,
             })
             setCompareData(false)
-            setSelectedReportOne(undefined)
-            setSelectedReportTwo(undefined)
           }}
         >
           Close graph
@@ -382,201 +401,221 @@ export default function Home() {
             fightInfoTwo={fightInfoTwo as DungeonInfo}
           />
         </div>
-        {/* <div className=" min-h-80 max-w-7xl m-auto">
-          <MyBarChart data={barChartDataOne} />
-        </div> */}
+        <div className=" min-h-80 max-w-7xl m-auto">
+          <MyBarChart reportOne={true} data={barChartDataOne} teamName={teamNameOne} />
+        </div>
+        <div className=" min-h-80 max-w-7xl m-auto">
+          <MyBarChart reportOne={false} teamName={teamNameTwo} data={barChartDataTwo} />
+        </div>
       </>
     )
   }
 
   return (
-    <main className="flex w-full mb-20 mt-20 flex-col p-4">
-      <h1 className="text-center m-auto text-4xl font-bold">Generate fancy MDI graphs</h1>
-      <h2 className="text-center m-auto text-lg mt-4">
-        Search for two reports. Select which report you wanna compare after searching.
-      </h2>
-      <div className=" w-full  max-w-4xl m-auto mt-20 grid grid-cols-1 lg:grid-cols-2">
-        <div>
-          <div className="flex w-full ">
-            <input
-              placeholder="Report code"
-              className=" lg:min-w-72 p-1  text-black flex-1 lg:max-w-72 rounded-l-lg "
-              name="reportCodeOne"
-              onChange={(event) => {
-                setReportCode(event.target.value)
-                setFightInfo({
-                  id: undefined,
-                  startTime: undefined,
-                  endTime: undefined,
-                  name: undefined,
-                  keystoneAffixes: undefined,
-                })
-              }}
-              value={reportCode}
-            />
-
-            <button
-              disabled={reportCode.length < 15 || loadingDamageDone || loadingFightDataOne}
-              onClick={fetchFightDataOne}
-              className="bg-[#FDB202] min-w-20 p-1 rounded-r-lg "
-            >
-              {' '}
-              <div className=" ml-4 flex mr-4">
-                {loadingFightDataOne ? 'Loading...' : 'Søk'}{' '}
-                {loadingFightDataOne && <Icons.spinner className="h-4 w-4 animate-spin mt-1 ml-2" />}
-              </div>
-            </button>
-          </div>
-        </div>
-        <div>
-          <div className="flex w-full mt-2 lg:mt-0">
-            <input
-              placeholder="Report code"
-              className=" lg:min-w-72 p-1  text-black flex-1 rounded-l-lg  "
-              name="reportCodeTwo"
-              onChange={(event) => {
-                setReportCodeTwo(event.target.value)
-
-                setFightInfoTwo({
-                  id: undefined,
-                  startTime: undefined,
-                  endTime: undefined,
-                  name: undefined,
-                  keystoneAffixes: undefined,
-                })
-              }}
-              value={reportCodeTwo}
-            />
-
-            <button
-              disabled={reportCodeTwo.length < 15 || loadingDamageDoneTwo || loadingFightDataTwo}
-              onClick={fetchFightDataTwo}
-              className="bg-[#FDB202] min-w-20 p-1 rounded-r-lg"
-            >
-              {' '}
-              <div className=" ml-4 flex mr-4">
-                {loadingFightDataTwo ? 'Loading...' : 'Søk'}{' '}
-                {loadingFightDataTwo && <Icons.spinner className="h-4 w-4 animate-spin mt-1 ml-2" />}
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="w-full max-w-4xl m-auto grid lg:grid-cols-2 ">
-        <div>
-          <ul>
-            {fightData && fightData.length ? (
-              <h3 className="mt-4">Select a report to compare (Only showing M+ reports)</h3>
-            ) : null}
-            {fightData?.map((e, index) => {
-              const classNameForList =
-                selectedReportOne === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202] text-black ' : 'bg-slate-500'
-              const affixesToNames = convertAffixIdsToNames(e.keystoneAffixes)
-
-              if (e.keystoneLevel === null) return null
-              return (
-                <li
-                  onClick={() => {
-                    const fightInfo = {
-                      id: e.id,
-                      startTime: e.startTime,
-                      endTime: e.endTime,
-                      name: e.name,
-                      keystoneAffixes: e.keystoneAffixes,
-                      keystoneLevel: e.keystoneLevel,
+    <div className="bg-[#052d49] py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-center mb-4">Generate fancy MDI graphs</h1>
+        <p className="text-center  mb-10">
+          Search for two reports. Select which report you wanna compare after searching.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <div className="flex items-center space-x-2 mb-4">
+              <Input
+                name="reportCodeOne"
+                onChange={(event) => {
+                  setReportCode(event.target.value)
+                  setErrorMessage(undefined)
+                  setFightInfo({
+                    id: undefined,
+                    startTime: undefined,
+                    endTime: undefined,
+                    name: undefined,
+                    keystoneAffixes: undefined,
+                  })
+                }}
+                placeholder="Enter report ID or name"
+                value={reportCode}
+              />
+              <Button
+                onClick={() => {
+                  if (reportCode.length < 10) {
+                    setErrorMessage('Report code is too short')
+                  } else {
+                    fetchFightDataOne()
+                  }
+                }}
+                className="h-auto"
+                variant="outline"
+                disabled={reportCode === ''}
+              >
+                {loadingFightDataOne ? (
+                  <Icons.spinner className="h-4 w-4 animate-spin text-black" />
+                ) : (
+                  <SearchIcon className="h-4 w-4" />
+                )}
+                <span className="sr-only">Search</span>
+              </Button>
+            </div>
+            {!loadingFightDataOne && errorMessage ? <p className="text-red-500">{errorMessage}</p> : null}
+            {fightData && fightData.length > 0 ? (
+              <>
+                <p className="text-sm  mb-2">Select a report to compare (Only showing M+ reports)</p>
+                <Select
+                  onValueChange={(value) => {
+                    const data = fightData.find((data) => data.id === parseInt(value))
+                    if (data) {
+                      setFightInfo(data)
+                      fetchDamageDone(data)
+                      fetchHealingDone(data)
                     }
-                    setFightInfo(fightInfo)
-                    fetchDamageDone(fightInfo)
-                    fetchHealingDone(fightInfo)
-                    setSelectedReportOne(e.id)
                   }}
-                  className={`p-2 ${classNameForList} mb-1 mt-1 lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
-                  key={index}
                 >
-                  {e.id}. {e.name}, +{e.keystoneLevel} ({affixesToNames?.join(', ')})
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-        <div>
-          <ul>
-            {fightData && fightData.length > 0 && fightDataTwo && fightDataTwo.length > 0 ? (
-              <h3 className="mt-4">Select second report to compare (Only showing M+ reports)</h3>
+                  <SelectTrigger id="report-one">
+                    <SelectValue placeholder={fightInfo.name ?? 'No report selected'} defaultValue={fightInfo.id} />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {fightData.map((data, index) => {
+                      if (data.keystoneLevel === null) return null
+                      return (
+                        <SelectItem key={index} value={data.id.toString()}>
+                          {data.id}. {data.name}, +{data.keystoneLevel} (
+                          {convertAffixIdsToNames(data.keystoneAffixes)?.join(', ')})
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  value={teamNameOne}
+                  onChange={(event) => {
+                    setTeamNameOne(event.target.value)
+                  }}
+                  className="mt-4"
+                  placeholder="Enter team name"
+                />
+              </>
             ) : null}
+          </div>
+          <div>
+            <div className="flex items-center space-x-2 mb-4">
+              <Input
+                name="reportCodeTwo"
+                onChange={(event) => {
+                  setErrorMessageTwo(undefined)
+                  setReportCodeTwo(event.target.value)
+                  setFightInfoTwo({
+                    id: undefined,
+                    startTime: undefined,
+                    endTime: undefined,
+                    name: undefined,
+                    keystoneAffixes: undefined,
+                  })
+                  setFightDataTwo([])
+                }}
+                value={reportCodeTwo}
+                placeholder="Enter report ID or name"
+              />
+              <Button
+                onClick={() => {
+                  if (reportCodeTwo.length < 10) {
+                    setErrorMessageTwo('Report code is too short')
+                  } else {
+                    fetchFightDataTwo()
+                  }
+                }}
+                className="h-auto"
+                variant="outline"
+              >
+                {loadingFightDataTwo ? (
+                  <Icons.spinner className="h-4 w-4 animate-spin text-black" />
+                ) : (
+                  <SearchIcon className="h-4 w-4" />
+                )}
+                <span className="sr-only">Search</span>
+              </Button>
+            </div>
+            {!loadingFightDataTwo && errorMessageTwo ? <p className="text-red-500">{errorMessageTwo}</p> : null}
+            {fightDataTwo && fightDataTwo.length > 0 ? (
+              <>
+                <p className="text-sm mb-2">Select second report to compare (Only showing M+ reports)</p>
+                <Select
+                  onValueChange={(value) => {
+                    const data = fightDataTwo.find((data) => data.id === parseInt(value))
 
-            {fightData &&
-              fightData.length > 0 &&
-              fightDataTwo &&
-              fightDataTwo.length > 0 &&
-              fightDataTwo?.map((e, index) => {
-                const classNameForList =
-                  selectedReportTwo === e.id ? 'bg-[#FDB202] hover:bg-[#FDB202] text-black ' : 'bg-slate-500'
-                const affixesToNames = convertAffixIdsToNames(e.keystoneAffixes)
+                    if (data) {
+                      setFightInfoTwo(data)
+                      fetchDamageDoneTwo(data)
+                      fetchHealingDoneTwo(data)
+                    }
+                  }}
+                >
+                  <SelectTrigger id="report-two">
+                    <SelectValue
+                      placeholder={fightInfoTwo.name ?? 'No report selected'}
+                      defaultValue={fightInfoTwo.id}
+                    />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {fightDataTwo.map((data, index) => {
+                      if (data.keystoneLevel === null) return null
 
-                return (
-                  <li
-                    onClick={() => {
-                      const fightInfo = {
-                        id: e.id,
-                        startTime: e.startTime,
-                        endTime: e.endTime,
-                        name: e.name,
-                        keystoneAffixes: e.keystoneAffixes,
-                        keystoneLevel: e.keystoneLevel,
-                      }
-                      setFightInfoTwo(fightInfo)
-                      fetchDamageDoneTwo(fightInfo)
-                      fetchHealingDoneTwo(fightInfo)
-                      setSelectedReportTwo(e.id)
-                    }}
-                    className={`p-2 ${classNameForList} lg:w-3/4 rounded-md cursor-pointer hover:bg-slate-600`}
-                    key={index}
-                  >
-                    {e.id}. {e.name} +{e.keystoneLevel} ({affixesToNames?.join(', ')})
-                  </li>
-                )
-              })}
-          </ul>
+                      return (
+                        <SelectItem key={index} value={data.id.toString()}>
+                          {data.id}. {data.name}, +{data.keystoneLevel} (
+                          {convertAffixIdsToNames(data.keystoneAffixes)?.join(', ')})
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={teamNameTwo}
+                  onChange={(event) => {
+                    setTeamNameTwo(event.target.value)
+                  }}
+                  className="mt-4"
+                  placeholder="Enter team name"
+                />
+              </>
+            ) : null}
+          </div>
         </div>
+        {fightInfo && fightInfo.id && fightInfoTwo && fightInfoTwo.id ? (
+          <div className="mt-6 flex justify-center">
+            <Button
+              onClick={() => {
+                setCompareData(true)
+                addQueryParams()
+              }}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Create graphs
+            </Button>
+          </div>
+        ) : null}
       </div>
+    </div>
+  )
+}
 
-      <div className="w-full  max-w-4xl m-auto mt-4 grid grid-cols-1 lg:grid-cols-2 ">
-        <div>
-          <h3>Team name one</h3>
-          <input
-            placeholder="Team name one"
-            className=" lg:min-w-72 m-auto p-1  lg:max-w-72 mb-2 w-full  text-black rounded-lg"
-            onChange={(event) => {
-              setTeamNameOne(event.target.value)
-            }}
-          />
-        </div>
-        <div>
-          <h3>Team name two</h3>
-          <input
-            placeholder="Team name two"
-            className=" lg:min-w-72 lg:max-w-72  w-full m-auto p-1  text-black rounded-lg"
-            onChange={(event) => {
-              setTeamNameTwo(event.target.value)
-            }}
-          />
-        </div>
-      </div>
-
-      {totalDamageDone && totalDamageDoneTwo ? (
-        <div className=" w-full flex flex-col">
-          <button
-            onClick={() => {
-              setCompareData(true)
-              addQueryParams()
-            }}
-            className=" bg-[#FDB202] min-w-72 m-auto mt-10 p-[10px] text-black font-bold rounded-lg  "
-          >
-            Create graphs
-          </button>
-        </div>
-      ) : null}
-    </main>
+function SearchIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="white"
+      stroke="black"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   )
 }

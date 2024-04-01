@@ -4,7 +4,7 @@ export async function damageDoneGraph(
   token: string,
 ) {
   if (!fightInfo.id) return []
-  if (reportCode.length < 15) return
+  if (reportCode.length < 10) return
 
   const response = await fetch('https://www.warcraftlogs.com/api/v2/client', {
     method: 'POST',
@@ -27,9 +27,7 @@ export async function damageDoneGraph(
 
   const data = await response.json()
 
-  const errors = data?.errors
-
-  return data?.data?.reportData?.report || errors
+  return data?.data?.reportData?.report
 }
 
 export async function healingDoneGraph(
@@ -38,6 +36,7 @@ export async function healingDoneGraph(
   token: string,
 ) {
   if (!fightInfo.id) return []
+  if (reportCode.length < 10) return
 
   const response = await fetch('https://www.warcraftlogs.com/api/v2/client', {
     method: 'POST',

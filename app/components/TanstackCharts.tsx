@@ -116,15 +116,11 @@ const LineComponent: React.FC<LineProps> = ({
   }
 
   const affixesToNames = convertAffixIdsToNames(fightInfo.keystoneAffixes)
-  const searchParams = useSearchParams()
-
-  const fallbackTeamNameOne = searchParams.get('teamNameOne') || ''
-  const fallbackTeamNameTwo = searchParams.get('teamNameTwo') || ''
 
   return (
     <div className="flex flex-col">
       {isDamageDone ? (
-        <div className="flex m-auto">
+        <div className="flex m-auto mb-4">
           <Image width={45} height={45} src="/MT_logo_white.webp" alt="Mythic Trials Sesong 2 Logo" />
 
           <div className=" ml-2 mt-6 flex flex-col">
@@ -135,7 +131,7 @@ const LineComponent: React.FC<LineProps> = ({
           </div>
         </div>
       ) : null}
-      {<div className="ml-4"> {isDamageDone ? 'Damage Done' : 'Healing Done'}</div>}
+      {<div className="ml-4 text-center"> {isDamageDone ? 'Damage Done' : 'Healing Done'}</div>}
 
       <div className="flex min-w-7xl min-h-[340px]">
         <Chart

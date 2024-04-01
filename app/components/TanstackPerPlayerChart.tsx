@@ -8,9 +8,11 @@ type Tdata = {
     total: number
     type: string
   }[]
+  teamName: string
+  reportOne: boolean
 }
 
-const MyBarChart = ({ data }: Tdata) => {
+const MyBarChart = ({ data, teamName, reportOne }: Tdata) => {
   // Transform the data into a format suitable for React Charts
 
   const chartData = React.useMemo(
@@ -65,19 +67,26 @@ const MyBarChart = ({ data }: Tdata) => {
   // Define a color for each bar
 
   return (
-    <div className="flex min-w-7xl min-h-[340px] mt-20 my-chart ">
-      <Chart
-        options={{
-          data: chartData,
-          primaryAxis,
-          secondaryAxes,
-          getSeriesStyle: (series) => ({
-            color: classColors[series.label],
-          }),
-          dark: true,
-        }}
-      />
-    </div>
+    <>
+      {teamName ? (
+        <h3 className="mt-20 text-center font-bold ">Damage done ({teamName} )</h3>
+      ) : (
+        <h3 className="mt-20 text-center font-bold ">Damage done</h3>
+      )}
+
+      <div className="flex min-w-7xl min-h-[340px] my-chart ">
+        <Chart
+          options={{
+            data: chartData,
+            primaryAxis,
+            secondaryAxes,
+            defaultColors: reportOne ? ['#FDB202'] : ['#FF4500'],
+
+            dark: true,
+          }}
+        />
+      </div>
+    </>
   )
 }
 
