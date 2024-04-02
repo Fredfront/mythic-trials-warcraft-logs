@@ -160,7 +160,7 @@ const LineComponent: React.FC<LineProps> = ({
 
 export default LineComponent
 
-function convertMillisToMinAndSec(startTime: number, endTime: number): string {
+export function convertMillisToMinAndSec(startTime: number, endTime: number): string {
   // Calculate the difference in milliseconds
   const diffInMillis: number = endTime - startTime
 
@@ -169,5 +169,5 @@ function convertMillisToMinAndSec(startTime: number, endTime: number): string {
   const seconds: number = Math.floor((diffInMillis % 60000) / 1000)
 
   // Return the result formatted as "mm:ss"
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  return `${minutes.toString().padStart(2, '0')} Min ${seconds.toString().padStart(2, '0')} Sec`
 }

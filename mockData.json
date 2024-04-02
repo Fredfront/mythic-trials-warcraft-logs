@@ -1,0 +1,52 @@
+[
+  {
+      "name": "Ink Blast",
+      "details": [
+          {
+              "name": "Nhåmro",
+              "total": 3
+          },
+          {
+              "name": "Quistosmash",
+              "total": 2
+          },
+          {
+              "name": "Pawtatochip",
+              "total": 1
+          }
+      ]
+  },
+  {
+    "name": "Healing Wave",
+    "details": [
+        {
+            "name": "Nhåmro",
+            "total": 1
+        },
+        {
+            "name": "Quistosmash",
+            "total": 1
+        },
+        {
+            "name": "Pawtatochip",
+            "total": 3
+        }, {
+            "name": "Girfaen",
+            "total": 1
+        }
+    ]
+},
+{
+  "name": "Super healing wave",
+  "details": [
+      {
+          "name": "Nhåmro",
+          "total": 1
+      },
+      {
+          "name": "Quistosmash",
+          "total": 1
+      }
+  ]
+}
+]

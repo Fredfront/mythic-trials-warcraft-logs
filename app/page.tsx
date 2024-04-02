@@ -11,6 +11,8 @@ import MyBarChart from './components/TanstackPerPlayerChart'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { tableOverview } from './api/tableOverall'
+import TableOverview from './components/Table'
 
 type fightData = {
   encounterId: number
@@ -34,7 +36,7 @@ export default function Home() {
   const generateInUrl = searchParams.get('generate') || ''
   const fallbackSelectedReportOne = searchParams.get('selectedReportOne')
   const fallbackSelectedReportTwo = searchParams.get('selectedReportTwo')
-  const [loading, setLoading] = useState<boolean>(false)
+  const fallbackShowTable = searchParams.get('showTable')
   const [token, setToken] = useState<string>(fallbackToken)
   const [fightData, setFightData] = useState<fightData[]>([])
   const [fightDataTwo, setFightDataTwo] = useState<fightData[]>([])
@@ -62,6 +64,9 @@ export default function Home() {
   const [loadingFightDataTwo, setLoadingFightDataTwo] = useState<boolean>(false)
   const [loadingDamageDone, setLoadingDamageDone] = useState<boolean>(false)
   const [loadingDamageDoneTwo, setLoadingDamageDoneTwo] = useState<boolean>(false)
+
+  const [overallTeamOne, setOverallTeamOne] = useState<any>(undefined)
+  const [overallTeamTwo, setOverallTeamTwo] = useState<any>(undefined)
 
   const [fightInfoTwo, setFightInfoTwo] = useState<{
     startTime?: number
@@ -124,6 +129,8 @@ export default function Home() {
       async function fetchData() {
         setLoadingDamageDone(true)
         const damageDone = await damageDoneGraph(reportCode, fightInfo, token)
+        const overall = await tableOverview(reportCode, fightInfo, token)
+        setOverallTeamOne(overall)
         setDamageDone(damageDone)
 
         setLoadingDamageDone(false)
@@ -138,6 +145,9 @@ export default function Home() {
       async function fetchData() {
         setLoadingDamageDoneTwo(true)
         const damageDoneTwo = await damageDoneGraph(reportCodeTwo, fightInfo, token)
+        const overall = await tableOverview(reportCodeTwo, fightInfo, token)
+        setOverallTeamTwo(overall)
+
         setDamageDoneTwo(damageDoneTwo)
         setLoadingDamageDoneTwo(false)
       }
@@ -301,6 +311,8 @@ export default function Home() {
     token,
   ])
 
+  const [showTable, setShowTable] = useState<boolean>(fallbackShowTable === 'true' ? true : false)
+
   function addQueryParams() {
     const params = new URLSearchParams()
     params.append('reportCode', reportCode)
@@ -309,6 +321,7 @@ export default function Home() {
     fightInfoTwo && fightInfoTwo.id && params.append('selectedReportTwo', fightInfoTwo.id.toString())
     params.append('teamNameOne', teamNameOne)
     params.append('teamNameTwo', teamNameTwo)
+    params.append('showTable', 'true')
     params.append('generate', 'true')
 
     router.replace(`/?${params.toString()}`)
@@ -340,7 +353,7 @@ export default function Home() {
     return (
       <>
         <button
-          className="absolute right-0 p-1"
+          className="absolute right-0 p-2"
           onClick={() => {
             router.replace(`?reportCode=${reportCode}&reportCodeTwo=${reportCodeTwo}`)
             setFightData([])
@@ -370,43 +383,60 @@ export default function Home() {
         >
           Close graph
         </button>
-
-        <div className=" min-h-80 max-w-7xl m-auto">
-          <Line
-            isDamageDone={true}
-            totalDamageDone={{
-              ...totalDamageDone,
-              name: teamNameOne,
-            }}
-            totalDamageDoneTwo={{
-              ...totalDamageDoneTwo,
-              name: teamNameTwo,
-            }}
-            fightInfo={fightInfo as DungeonInfo}
-            fightInfoTwo={fightInfoTwo as DungeonInfo}
-          />
+        <div className="absolute left-0 p-2">
+          <div className="flex gap-8">
+            <div
+              onClick={() => {
+                setShowTable(!showTable)
+              }}
+            >
+              {!showTable ? 'See overview' : 'See graph'}
+            </div>
+          </div>
         </div>
-        <div className=" min-h-80 max-w-7xl m-auto">
-          <Line
-            isDamageDone={false}
-            totalDamageDone={{
-              ...totalHealingDone,
-              name: teamNameOne,
-            }}
-            totalDamageDoneTwo={{
-              ...totalHealingDoneTwo,
-              name: teamNameTwo,
-            }}
-            fightInfo={fightInfo as DungeonInfo}
-            fightInfoTwo={fightInfoTwo as DungeonInfo}
-          />
-        </div>
-        <div className=" min-h-80 max-w-7xl m-auto">
-          <MyBarChart reportOne={true} data={barChartDataOne} teamName={teamNameOne} />
-        </div>
-        <div className=" min-h-80 max-w-7xl m-auto">
-          <MyBarChart reportOne={false} teamName={teamNameTwo} data={barChartDataTwo} />
-        </div>
+        {!showTable ? (
+          <>
+            <div className=" min-h-80 max-w-7xl m-auto">
+              <Line
+                isDamageDone={true}
+                totalDamageDone={{
+                  ...totalDamageDone,
+                  name: teamNameOne,
+                }}
+                totalDamageDoneTwo={{
+                  ...totalDamageDoneTwo,
+                  name: teamNameTwo,
+                }}
+                fightInfo={fightInfo as DungeonInfo}
+                fightInfoTwo={fightInfoTwo as DungeonInfo}
+              />
+            </div>
+            <div className=" min-h-80 max-w-7xl m-auto">
+              <Line
+                isDamageDone={false}
+                totalDamageDone={{
+                  ...totalHealingDone,
+                  name: teamNameOne,
+                }}
+                totalDamageDoneTwo={{
+                  ...totalHealingDoneTwo,
+                  name: teamNameTwo,
+                }}
+                fightInfo={fightInfo as DungeonInfo}
+                fightInfoTwo={fightInfoTwo as DungeonInfo}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className=" min-h-80 max-w-7xl m-auto">
+              <TableOverview data={overallTeamOne} fightInfo={fightInfo} teamName={teamNameOne} reportOne={true} />
+            </div>
+            <div className=" min-h-80 max-w-7xl m-auto">
+              <TableOverview data={overallTeamTwo} fightInfo={fightInfoTwo} teamName={teamNameTwo} reportOne={false} />
+            </div>
+          </>
+        )}
       </>
     )
   }
