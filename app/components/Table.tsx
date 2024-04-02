@@ -25,8 +25,6 @@ export interface TableOverviewProps {
 export default function TableOverview({ data, fightInfo, teamName, reportOne }: TableOverviewProps) {
   const damageDone = data.damageDone.sort((a: { total: number }, b: { total: number }) => b.total - a.total)
 
-  const backgroundColor = reportOne ? '#FFD700' : '#FF4500'
-
   type TmappedData = {
     damageDone: number
     damageTaken: number
@@ -82,21 +80,25 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
 
   const effectiveDPSToThoundsands = Math.round(effectiveDPS / 1000)
 
-  const tableClass = reportOne
-    ? 'mt-4 text-[#FFD700] bg-[#ffd90061] rounded-lg drop-shadow-lg '
-    : 'mt-4 text-white bg-[#ff440084] rounded-lg drop-shadow-lg '
-
   const borderClass = reportOne ? 'border-[#FFD700]' : 'border-[#FF4500]'
 
-  const dungeonTimeClass = reportOne ? 'mt-2 text-center text-[#FFD700] ' : 'mt-2 text-center text-[#FF4500]'
+  const dungeonTimeClass = reportOne
+    ? 'mt-2 text-center text-[#FFD700] font-bold '
+    : 'mt-2 text-center text-[#FF4500] font-bold'
 
   return (
     <div className={`p-4  `}>
-      <div className="mb-8">
-        <h2 className="text-2xl mt-10 font-bold mb-2 text-center">{teamName}</h2>
-        <Table className={tableClass}>
-          <TableHeader className=" bg-gray-800 text-white pt-2 pb-2 ">
-            <TableRow>
+      <div>
+        <h2 className="text-2xl mt-10 font-bold mb-2 text-center ">{teamName}</h2>
+        <Table
+          className={
+            reportOne
+              ? 'mt-4 text-[#FFD700] bg-[#ffd90061] rounded-lg drop-shadow-lg'
+              : 'mt-4 text-white bg-[#ff440084] rounded-lg drop-shadow-lg'
+          }
+        >
+          <TableHeader className=" bg-gray-800 text-white pt-2 pb-2  ">
+            <TableRow className=" border-none ">
               <TableHead>Name</TableHead>
               <TableHead className="text-center">
                 <div>Damage</div>
@@ -129,7 +131,7 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
           <TableBody>
             {mappedData.map((row) => (
               <TableRow key={row.name} className={borderClass}>
-                <TableCell className="ml-4">
+                <TableCell>
                   <div className="flex gap-4">
                     <Image
                       src={findWoWClassIcon(row.wowClass) as unknown as string}

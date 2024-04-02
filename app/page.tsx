@@ -429,10 +429,10 @@ export default function Home() {
           </>
         ) : (
           <>
-            <div className=" min-h-80 max-w-7xl m-auto">
+            <div className=" max-w-7xl m-auto">
               <TableOverview data={overallTeamOne} fightInfo={fightInfo} teamName={teamNameOne} reportOne={true} />
             </div>
-            <div className=" min-h-80 max-w-7xl m-auto">
+            <div className="  max-w-7xl m-auto">
               <TableOverview data={overallTeamTwo} fightInfo={fightInfoTwo} teamName={teamNameTwo} reportOne={false} />
             </div>
           </>
