@@ -26,10 +26,11 @@ type fightData = {
 
 export default function Home() {
   const searchParams = useSearchParams()
+  const fallbackReportCode = searchParams.get('reportCode') || ''
+
   const router = useRouter()
   const fallbackToken = sessionStorage.getItem('WCL_token') || ''
 
-  const fallbackReportCode = searchParams.get('reportCode') || ''
   const fallbackReportCodeTwo = searchParams.get('reportCodeTwo') || ''
   const fallbackTeamNameOne = searchParams.get('teamNameOne') || ''
   const fallbackTeamNameTwo = searchParams.get('teamNameTwo') || ''
@@ -429,12 +430,19 @@ export default function Home() {
           </>
         ) : (
           <>
-            <div className=" max-w-7xl m-auto">
+            <div className=" max-w-7xl m-auto ">
               <TableOverview data={overallTeamOne} fightInfo={fightInfo} teamName={teamNameOne} reportOne={true} />
             </div>
-            <div className="  max-w-7xl m-auto">
-              <TableOverview data={overallTeamTwo} fightInfo={fightInfoTwo} teamName={teamNameTwo} reportOne={false} />
-            </div>
+            {reportCode === reportCodeTwo ? null : (
+              <div className="max-w-7xl m-auto ">
+                <TableOverview
+                  data={overallTeamTwo}
+                  fightInfo={fightInfoTwo}
+                  teamName={teamNameTwo}
+                  reportOne={false}
+                />
+              </div>
+            )}
           </>
         )}
       </>

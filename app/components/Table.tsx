@@ -14,6 +14,7 @@ import deathknight from '../../public/classes/deathknight.png'
 import demonhunter from '../../public/classes/demonhunter.png'
 import evoker from '../../public/classes/evoker.png'
 import Image from 'next/image'
+import { convertAffixIdsToNames } from '../utils/affixes'
 
 export interface TableOverviewProps {
   data: any
@@ -86,10 +87,18 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
     ? 'mt-2 text-center text-[#FFD700] font-bold '
     : 'mt-2 text-center text-[#FF4500] font-bold'
 
+  const affixesToNames = convertAffixIdsToNames(fightInfo.keystoneAffixes)
+
   return (
     <div className={`p-4  `}>
       <div>
         <h2 className="text-2xl mt-10 font-bold mb-2 text-center ">{teamName}</h2>
+        <div className=" ml-2 mt-6 flex flex-col text-center ">
+          <div>
+            {fightInfo.name}, +{fightInfo.keystoneLevel}
+          </div>
+          <div>{affixesToNames?.join(', ')}</div>
+        </div>
         <Table
           className={
             reportOne
