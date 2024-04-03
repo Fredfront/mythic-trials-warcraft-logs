@@ -18,6 +18,7 @@ export async function tableOverview(
            damageTaken: table(dataType: DamageTaken, fightIDs: ${fightInfo.id})
            deaths: table(dataType: Deaths, fightIDs: ${fightInfo.id})
            healing: table(dataType: Healing, fightIDs: ${fightInfo.id})
+           sanguineHealing: table(dataType: Healing, fightIDs: ${fightInfo.id}, hostilityType:Enemies )
           }
         } 
       }`,
@@ -36,5 +37,6 @@ export async function tableOverview(
     damageTaken: data?.data?.reportData?.report.damageTaken.data.entries,
     deaths: data?.data?.reportData?.report.deaths.data.entries,
     healing: data?.data?.reportData?.report.healing.data.entries,
+    sanguineHealing: data?.data?.reportData?.report.sanguineHealing.data.entries,
   }
 }

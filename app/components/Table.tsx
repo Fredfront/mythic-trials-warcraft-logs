@@ -13,6 +13,7 @@ import warrior from '../../public/classes/warrior.png'
 import deathknight from '../../public/classes/deathknight.png'
 import demonhunter from '../../public/classes/demonhunter.png'
 import evoker from '../../public/classes/evoker.png'
+import sanguineIchor from '../../public/classes/sanguineIchor.png'
 import Image from 'next/image'
 import { convertAffixIdsToNames } from '../utils/affixes'
 
@@ -39,7 +40,7 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
   }
   const totalDungeonTime = fightInfo?.endTime - fightInfo?.startTime
 
-  const mappedData = damageDone.map((e: any) => {
+  let mappedData = damageDone.map((e: any) => {
     return {
       damageDone: e.total,
       wowClass: e.type,
@@ -67,6 +68,11 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
       ? `${Math.round(totalDamageDoneToMillion / 1000)}B`
       : `${Math.round(totalDamageDoneToMillion)}M`
 
+  const totalHealingDoneTableValue =
+    Math.round(totalHealingDoneToMillion) > 1000
+      ? `${Math.round(totalHealingDoneToMillion / 1000)}B`
+      : `${Math.round(totalHealingDoneToMillion)}M`
+
   const totalDeaths = data.deaths.length
 
   const interrupts = mappedData.map((e) => e.interrupts)
@@ -79,7 +85,15 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
 
   const effectiveDPS = totalDamageDone / (totalDungeonTime / 1000)
 
-  const effectiveDPSToThoundsands = Math.round(effectiveDPS / 1000)
+  const effectiveDPSTableValue =
+    Math.round(effectiveDPS / 1000) > 1000
+      ? `${Math.round(effectiveDPS / 1000000)}M`
+      : `${Math.round(effectiveDPS / 1000)}K`
+
+  const effectiveDPSTablealueWithTwoDecimals =
+    Math.round(effectiveDPS / 1000) > 1000
+      ? `${(effectiveDPS / 1000000).toFixed(2)}M`
+      : `${(effectiveDPS / 1000).toFixed(2)}K`
 
   const borderClass = reportOne ? 'border-[#FFD700]' : 'border-[#FF4500]'
 
@@ -88,6 +102,24 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
     : 'mt-2 text-center text-[#FF4500] font-bold'
 
   const affixesToNames = convertAffixIdsToNames(fightInfo.keystoneAffixes)
+
+  const sanguineHealing = data.sanguineHealing.filter((e: any) => e.name === 'Environment')
+  const sanguineHealingTotal = sanguineHealing?.[0]?.abilities?.filter((a: any) => a.name === 'Sanguine Ichor')?.[0]
+    ?.total
+
+  const sanguineInchor = {
+    name: 'Sanguine Ichor',
+    healing: sanguineHealingTotal,
+    effectiveHPS: sanguineHealingTotal / (totalDungeonTime / 1000),
+    wowClass: 'Sanguine Ichor',
+    damageDone: 0,
+    damageTaken: 0,
+    deaths: 0,
+    interrupts: 0,
+    effectiveDPS: 0,
+  }
+
+  mappedData = [...mappedData, sanguineInchor]
 
   return (
     <div className={`p-4  `}>
@@ -138,34 +170,39 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mappedData.map((row) => (
-              <TableRow key={row.name} className={borderClass}>
-                <TableCell>
-                  <div className="flex gap-4">
-                    <Image
-                      src={findWoWClassIcon(row.wowClass) as unknown as string}
-                      height={16}
-                      width={20}
-                      alt={row.name}
-                    />{' '}
-                    {row.name}
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">{Math.round(row.damageDone / 1000000)}M</TableCell>
-                <TableCell className="text-center">{Math.round(row.effectiveDPS / 1000)}K</TableCell>
-                <TableCell className="text-center">{Math.round(row.healing / 1000000)}M</TableCell>
-                <TableCell className="text-center">{Math.round(row.effectiveHPS / 1000)}K</TableCell>
-                <TableCell className="text-center">{Math.round(row.damageTaken / 1000000)}M</TableCell>
-                <TableCell className="text-center">{row.interrupts}</TableCell>
-                <TableCell className="text-center">{row.deaths}</TableCell>
-              </TableRow>
-            ))}
+            {mappedData.map((row) => {
+              if (row.healing === undefined) return null
+
+              return (
+                <TableRow key={row.name} className={borderClass}>
+                  <TableCell>
+                    <div className="flex gap-4">
+                      <Image
+                        src={findWoWClassIcon(row.wowClass) as unknown as string}
+                        height={16}
+                        width={20}
+                        alt={row.name}
+                      />{' '}
+                      {row.name}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-center">{Math.round(row.damageDone / 1000000)}M</TableCell>
+                  <TableCell className="text-center">{Math.round(row.effectiveDPS / 1000)}K</TableCell>
+                  <TableCell className="text-center">{Math.round(row.healing / 1000000)}M</TableCell>
+                  <TableCell className="text-center">{Math.round(row.effectiveHPS / 1000)}K</TableCell>
+                  <TableCell className="text-center">{Math.round(row.damageTaken / 1000000)}M</TableCell>
+                  <TableCell className="text-center">{row.interrupts}</TableCell>
+                  <TableCell className="text-center">{row.deaths}</TableCell>
+                </TableRow>
+              )
+            })}
 
             <TableRow className="font-bold">
               <TableCell>Total</TableCell>
               <TableCell className="text-center">{totalDamageDoneTableValue}</TableCell>
-              <TableCell className="text-center">{effectiveDPSToThoundsands}K</TableCell>
-              <TableCell className="text-center">{Math.round(totalHealingDoneToMillion)}M</TableCell>
+              <TableCell className="text-center">{effectiveDPSTablealueWithTwoDecimals}</TableCell>
+              <TableCell className="text-center">{totalHealingDoneTableValue}</TableCell>
               <TableCell className="text-center">{Math.round(totalEffectiveHPS / 1000)}K</TableCell>
               <TableCell className="text-center">{Math.round(totalDamageTakenToMillion)}M</TableCell>
               <TableCell className="text-center">{totalInterrupts}</TableCell>
@@ -234,10 +271,13 @@ enum wowClasses {
   monk = 'Monk',
   demonhunter = 'DemonHunter',
   evoker = 'Evoker',
+  sanguine = 'Sanguine Ichor',
 }
 
 function findWoWClassIcon(wowClass: string) {
   switch (wowClass) {
+    case wowClasses.sanguine:
+      return sanguineIchor
     case wowClasses.druid:
       return druid
     case wowClasses.hunter:

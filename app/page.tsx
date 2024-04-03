@@ -7,7 +7,6 @@ import { damageDoneGraph, healingDoneGraph } from './api/damageDone'
 import Line, { DungeonInfo } from './components/TanstackCharts'
 import { Icons } from './components/Loading'
 import { convertAffixIdsToNames } from './utils/affixes'
-import MyBarChart from './components/TanstackPerPlayerChart'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -196,9 +195,6 @@ export default function Home() {
 
   const [teamNameOne, setTeamNameOne] = useState<string>(fallbackTeamNameOne)
   const [teamNameTwo, setTeamNameTwo] = useState<string>(fallbackTeamNameTwo)
-
-  const barChartDataOne = damageDone?.graph?.data?.series.filter((e: any) => e.name !== 'Total')
-  const barChartDataTwo = damageDoneTwo?.graph?.data?.series.filter((e: any) => e.name !== 'Total')
 
   useEffect(() => {
     if (fightData && fightData.length > 0 && reportCode === '') {
