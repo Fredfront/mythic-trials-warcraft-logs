@@ -21,6 +21,7 @@ type fightData = {
   keystoneLevel: number
   name: string
   startTime: number
+  keystoneTime: number
 }
 
 export default function Home() {
@@ -52,12 +53,14 @@ export default function Home() {
     id?: number
     name?: string
     keystoneAffixes?: number[]
+    keystoneTime: number
   }>({
     id: undefined,
     startTime: undefined,
     endTime: undefined,
     name: undefined,
     keystoneAffixes: undefined,
+    keystoneTime: 0,
   })
 
   const [loadingFightDataOne, setLoadingFightDataOne] = useState<boolean>(false)
@@ -367,6 +370,7 @@ export default function Home() {
               endTime: undefined,
               name: undefined,
               keystoneAffixes: undefined,
+              keystoneTime: 0,
             })
             setFightInfoTwo({
               id: undefined,
@@ -466,6 +470,8 @@ export default function Home() {
                     endTime: undefined,
                     name: undefined,
                     keystoneAffixes: undefined,
+
+                    keystoneTime: 0,
                   })
                 }}
                 placeholder="Enter report ID or name"

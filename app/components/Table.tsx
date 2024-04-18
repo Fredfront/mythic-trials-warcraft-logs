@@ -1,5 +1,4 @@
 import { TableHead, TableRow, TableHeader, TableCell, TableBody, Table } from '@/components/ui/table'
-import { convertMillisToMinAndSec } from './TanstackCharts'
 import monk from '../../public/classes/monk.png'
 import druid from '../../public/classes/druid.png'
 import hunter from '../../public/classes/hunter.png'
@@ -16,6 +15,7 @@ import evoker from '../../public/classes/evoker.png'
 import sanguineIchor from '../../public/classes/sanguineIchor.png'
 import Image from 'next/image'
 import { convertAffixIdsToNames } from '../utils/affixes'
+import { formatMilliseconds } from './TanstackCharts'
 
 export interface TableOverviewProps {
   data: any
@@ -112,8 +112,6 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
     effectiveDPS: 0,
   }
 
-  console.log(totalDeaths * 5 * 1000)
-
   mappedData = [...mappedData, sanguineInchor]
 
   return (
@@ -206,9 +204,7 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
           </TableBody>
         </Table>
         <div>
-          <p className={dungeonTimeClass}>
-            {/* {convertMillisToMinAndSec(fightInfo?.startTime, fightInfo?.endTime + totalDeaths * 5 * 1000)} */}
-          </p>
+          <p className={dungeonTimeClass}> {formatMilliseconds(fightInfo.keystoneTime)} </p>
         </div>
       </div>
     </div>

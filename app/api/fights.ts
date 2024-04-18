@@ -17,6 +17,8 @@ export async function fights(reportCode: string, token: string) {
                 endTime
                 keystoneAffixes
                 keystoneLevel
+                keystoneTime
+
               }
             }
           }

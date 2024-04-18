@@ -25,6 +25,7 @@ export interface DungeonInfo {
   name: string
   keystoneLevel: number
   keystoneAffixes: number[]
+  keystoneTime: number
 }
 
 interface LineProps {
@@ -147,12 +148,10 @@ const LineComponent: React.FC<LineProps> = ({
       {!isDamageDone ? null : (
         <div className="flex m-auto gap-10 mt-10 mb-10">
           <div className="border-l-4 border-[#FFD700] pl-2">
-            {totalDamageDone.name}
-            {/* ({convertMillisToMinAndSec(fightInfoStartTime, fightInfoEndTime)}) */}
+            {totalDamageDone.name} ({formatMilliseconds(fightInfo.keystoneTime)})
           </div>
           <div className="border-l-4 border-[#FF4500] pl-2">
-            {totalDamageDoneTwo.name}
-            {/* ({convertMillisToMinAndSec(fightInfoTwoStartTime, fightInfoTwoEndTime)}) */}
+            {totalDamageDoneTwo.name} ({formatMilliseconds(fightInfoTwo.keystoneTime)})
           </div>
         </div>
       )}
@@ -162,14 +161,22 @@ const LineComponent: React.FC<LineProps> = ({
 
 export default LineComponent
 
-export function convertMillisToMinAndSec(startTime: number, endTime: number): string {
-  // Calculate the difference in milliseconds
-  const diffInMillis: number = endTime - startTime
-
+export function formatMilliseconds(milliseconds: number): string {
   // Convert milliseconds to minutes and seconds
-  const minutes: number = Math.floor(diffInMillis / 60000)
-  const seconds: number = Math.floor((diffInMillis % 60000) / 1000)
+  const minutes = Math.floor(milliseconds / (1000 * 60))
+  const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000)
 
-  // Return the result formatted as "mm:ss"
-  return `${minutes.toString().padStart(2, '0')} Min ${seconds.toString().padStart(2, '0')} Sec`
+  // Construct the formatted string
+  let formattedTime = ''
+
+  if (minutes > 0) {
+    formattedTime += `${minutes} Minute${minutes > 1 ? 's' : ''}`
+    if (seconds > 0) {
+      formattedTime += ` ${seconds} Second${seconds > 1 ? 's' : ''}`
+    }
+  } else {
+    formattedTime += `${seconds} Second${seconds > 1 ? 's' : ''}`
+  }
+
+  return formattedTime
 }
