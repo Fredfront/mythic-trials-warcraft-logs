@@ -112,6 +112,8 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
     effectiveDPS: 0,
   }
 
+  console.log(totalDeaths * 5 * 1000)
+
   mappedData = [...mappedData, sanguineInchor]
 
   return (
@@ -204,7 +206,9 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
           </TableBody>
         </Table>
         <div>
-          <p className={dungeonTimeClass}>{convertMillisToMinAndSec(fightInfo?.startTime, fightInfo?.endTime)}</p>
+          <p className={dungeonTimeClass}>
+            {/* {convertMillisToMinAndSec(fightInfo?.startTime, fightInfo?.endTime + totalDeaths * 5 * 1000)} */}
+          </p>
         </div>
       </div>
     </div>

@@ -147,10 +147,12 @@ const LineComponent: React.FC<LineProps> = ({
       {!isDamageDone ? null : (
         <div className="flex m-auto gap-10 mt-10 mb-10">
           <div className="border-l-4 border-[#FFD700] pl-2">
-            {totalDamageDone.name} ({convertMillisToMinAndSec(fightInfoStartTime, fightInfoEndTime)})
+            {totalDamageDone.name}
+            {/* ({convertMillisToMinAndSec(fightInfoStartTime, fightInfoEndTime)}) */}
           </div>
           <div className="border-l-4 border-[#FF4500] pl-2">
-            {totalDamageDoneTwo.name} ({convertMillisToMinAndSec(fightInfoTwoStartTime, fightInfoTwoEndTime)})
+            {totalDamageDoneTwo.name}
+            {/* ({convertMillisToMinAndSec(fightInfoTwoStartTime, fightInfoTwoEndTime)}) */}
           </div>
         </div>
       )}
