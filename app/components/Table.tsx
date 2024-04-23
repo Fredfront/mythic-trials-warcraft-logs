@@ -38,7 +38,7 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
     effectiveHPS: number
     wowClass: string
   }
-  const totalDungeonTime = fightInfo?.endTime - fightInfo?.startTime
+  const totalDungeonTime = fightInfo.keystoneTime ?? fightInfo?.endTime - fightInfo?.startTime
 
   let mappedData = damageDone.map((e: any) => {
     return {
@@ -86,7 +86,9 @@ export default function TableOverview({ data, fightInfo, teamName, reportOne }: 
   const effectiveDPS = totalDamageDone / (totalDungeonTime / 1000)
 
   const effectiveDPSTablealueWithTwoDecimals =
-    Math.round(effectiveDPS / 1000) > 1000 ? `${(effectiveDPS / 1000000).toFixed(2)}M` : `${effectiveDPS / 1000}K`
+    Math.round(effectiveDPS / 1000) > 1000
+      ? `${(effectiveDPS / 1000000).toFixed(2)}M`
+      : `${(effectiveDPS / 1000).toFixed(2)}K`
 
   const borderClass = reportOne ? 'border-[#FFD700]' : 'border-[#FF4500]'
 
